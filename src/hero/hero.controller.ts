@@ -6,11 +6,13 @@ import {
   HttpCode,
   Param,
   Post,
+  Put,
   Redirect,
   Req,
   Res,
 } from '@nestjs/common';
 import { CreateHeroDto } from './dto/CreateHero.dto';
+import { UpdateHeroDto } from './dto/UpdateHero.dto';
 
 let data = [
   {
@@ -70,9 +72,18 @@ export class HeroController {
 
   @Get('detail/:id')
   show(@Param('id') id: any, @Res() response) {
-    console.log('params', id);
     const resultObject = data.find((item) => item.id == id);
-    console.log(resultObject);
     return response.json(resultObject);
+  }
+
+  @Put('update/:id')
+  update(@Param('id') id: any, @Body() UpdateUserDto: UpdateHeroDto) {
+    data.filter((hero) => {
+      if (hero.id == id) {
+        hero.name = UpdateUserDto.name;
+        hero.image = UpdateUserDto.image;
+      }
+    });
+    return data;
   }
 }
