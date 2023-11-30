@@ -1,5 +1,16 @@
-import { Controller, Get, HttpCode, Post, Req, Res } from '@nestjs/common';
-import { response } from 'express';
+import {
+  Body,
+  Controller,
+  Get,
+  Header,
+  HttpCode,
+  Param,
+  Post,
+  Redirect,
+  Req,
+  Res,
+} from '@nestjs/common';
+import { CreateHeroDto } from './dto/CreateHero.dto';
 
 let data = [
   {
@@ -23,6 +34,7 @@ let data = [
 export class HeroController {
   @Get()
   @HttpCode(200)
+  @Header('Content-Type', 'application/json')
   index(@Res() response) {
     response.json(data);
   }
@@ -34,10 +46,33 @@ export class HeroController {
   }
 
   @Post('store')
-  store(@Req() request, @Res({ passthrough: true }) response) {
-    // response.status(201).json(request.body);
-    const { id, name, image } = request.body;
-    data.push({ id, name, image });
-    return data;
+  @HttpCode(201)
+  store(
+    @Req() request,
+    @Body() createHeroDto: CreateHeroDto,
+    @Res({ passthrough: true }) response,
+  ) {
+    try {
+      // const { id, name, image } = request.body;
+      // data.push({ id, name, image });
+      // return data;
+      return createHeroDto;
+    } catch (error) {
+      response.status(500).json({ message: error });
+    }
+  }
+
+  @Get('welcome')
+  @Redirect('http://ridwanromadhon.com/')
+  hello() {
+    return 'welcome';
+  }
+
+  @Get('detail/:id')
+  show(@Param('id') id: any, @Res() response) {
+    console.log('params', id);
+    const resultObject = data.find((item) => item.id == id);
+    console.log(resultObject);
+    return response.json(resultObject);
   }
 }
