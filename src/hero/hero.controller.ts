@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Header,
   HttpCode,
@@ -13,32 +14,17 @@ import {
 } from '@nestjs/common';
 import { CreateHeroDto } from './dto/CreateHero.dto';
 import { UpdateHeroDto } from './dto/UpdateHero.dto';
-
-let data = [
-  {
-    id: 1,
-    name: 'Ridwan',
-    image: 'Ridwan.png',
-  },
-  {
-    id: 2,
-    name: 'Budi',
-    image: 'Budi.png',
-  },
-  {
-    id: 3,
-    name: 'Doni',
-    image: 'Doni.png',
-  },
-];
+import { HeroService } from './hero.service';
 
 @Controller('hero')
 export class HeroController {
+  constructor(private heroService: HeroService) {}
+
   @Get()
   @HttpCode(200)
   @Header('Content-Type', 'application/json')
   index(@Res() response) {
-    response.json(data);
+    response.json(this.heroService.findAll);
   }
 
   @Get('create')
@@ -72,18 +58,28 @@ export class HeroController {
 
   @Get('detail/:id')
   show(@Param('id') id: any, @Res() response) {
-    const resultObject = data.find((item) => item.id == id);
+    const resultObject = this.heroService
+      .findAll()
+      .find((item) => item.id == id);
     return response.json(resultObject);
   }
 
   @Put('update/:id')
   update(@Param('id') id: any, @Body() UpdateUserDto: UpdateHeroDto) {
-    data.filter((hero) => {
+    this.heroService.findAll().filter((hero) => {
       if (hero.id == id) {
         hero.name = UpdateUserDto.name;
         hero.image = UpdateUserDto.image;
       }
     });
-    return data;
+    return this.heroService.findAll();
+  }
+
+  @Delete('destroy/:id')
+  destrou(@Param('id') id: any, @Res() response) {
+    const resultObject = this.heroService.findAll().filter((hero) => {
+      return hero.id != id;
+    });
+    return response.json(resultObject);
   }
 }
