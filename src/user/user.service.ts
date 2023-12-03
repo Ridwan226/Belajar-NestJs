@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from 'src/prisma.service';
@@ -9,6 +13,12 @@ export class UserService {
   constructor(private prisma: PrismaService) {}
 
   async register(createUserDto: CreateUserDto) {
+    const cekEmail = await this.findByEmail(createUserDto.email);
+
+    if (cekEmail) {
+      throw new ConflictException('Email already registered');
+    }
+
     const newUser = await this.prisma.user.create({
       data: {
         ...createUserDto,
@@ -27,8 +37,25 @@ export class UserService {
     return `This action returns all user`;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findByEmail(email: string) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        email,
+      },
+    });
+    return user;
+  }
+
+  async findById(id: number) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id,
+      },
+    });
+    if (user) {
+      return user;
+    }
+    throw new NotFoundException('Data User Not Found');
   }
 
   update(id: number, updateUserDto: UpdateUserDto) {
